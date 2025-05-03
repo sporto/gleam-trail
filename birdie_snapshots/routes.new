@@ -2,12 +2,25 @@
 version: 1.2.7
 title: routes
 ---
+pub type AppUserRoute {
+  AppUserTop()
+  AppUserDelete()
+}
+
 pub type AppRoute {
-  Top()
-  Users()
-  User(id: String)
+  AppTop()
+  AppUsers()
+  AppUser(route: AppUserRoute, id: String)
 }
 
 pub type Route {
   App(route: AppRoute)
 }
+
+pub fn app_user_delete_path() -> Route
+
+pub fn app_user_top_path() -> Route
+
+pub fn app_users_path() -> Route
+
+pub fn app_top_path() -> Route
