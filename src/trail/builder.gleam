@@ -3,9 +3,9 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
 import justin
-import trail/types.{type Route}
+import trail/types.{type RouteTree}
 
-pub fn build(routes: List(Route)) {
+pub fn build(routes: List(RouteTree)) {
   let contributes = build_route([], "Route", routes)
 
   glance.Module(
@@ -45,7 +45,7 @@ fn merge(a: Contributes, others: List(Contributes)) {
   Contributes(custom_types:, functions:)
 }
 
-fn build_route(ancestors: List(String), name: String, routes: List(Route)) {
+fn build_route(ancestors: List(String), name: String, routes: List(RouteTree)) {
   let #(variants, variant_contributions) =
     routes
     |> list.map(build_route_variant(ancestors, _))
@@ -69,17 +69,17 @@ fn build_route(ancestors: List(String), name: String, routes: List(Route)) {
 
 fn build_route_variant(
   ancestors: List(String),
-  route: Route,
+  route: RouteTree,
 ) -> #(glance.Variant, Contributes) {
   let ancestors_with_this = ancestors |> list.append([route.name])
 
   let variant_name = make_variant_name(ancestors_with_this)
 
-  let #(sub_route_contributes, sub_route_fields) = case route.children {
-    [] -> {
+  let #(sub_route_contributes, sub_route_fields) = case route {
+    types.RouteNode(_, _) -> {
       #(Contributes(custom_types: [], functions: []), [])
     }
-    _ -> {
+    types.RouteTree(_, _, _) -> {
       let sub_route_name = variant_name <> "Route"
 
       let sub_route_contributes =
@@ -117,8 +117,8 @@ fn build_route_variant(
 
   let variant = glance.Variant(name: variant_name, fields:)
 
-  let this_variant_function_to_path = case route.children {
-    [] -> {
+  let this_variant_function_to_path = case route {
+    types.RouteNode(_, _) -> {
       let name = make_path_name(ancestors_with_this) <> "_path"
       [
         glance.Function(

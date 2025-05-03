@@ -1,7 +1,7 @@
 import birdie
 import glacier
 import trail
-import trail/types.{Parameter, Route, Segment}
+import trail/types.{Parameter, RouteNode, RouteTree, Segment}
 
 pub fn main() {
   glacier.main()
@@ -9,14 +9,15 @@ pub fn main() {
 
 pub fn generate_test() {
   let routes = [
-    Route("App", [Segment("app")], children: [
+    RouteTree("App", [Segment("app")], children: [
       //
-      Route("Top", [], []),
-      Route("Users", [Segment("users")], []),
-      Route("User", [Segment("users"), Parameter(name: "id", type_: "UserId")], [
-        Route("Top", [], []),
-        Route("Delete", [], []),
-      ]),
+      RouteNode("Top", []),
+      RouteNode("Users", [Segment("users")]),
+      RouteTree(
+        "User",
+        [Segment("users"), Parameter(name: "id", type_: "UserId")],
+        [RouteNode("Top", []), RouteNode("Delete", [])],
+      ),
     ]),
   ]
   trail.generate(routes)
