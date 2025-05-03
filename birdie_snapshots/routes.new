@@ -1,0 +1,13 @@
+---
+version: 1.2.7
+title: routes
+---
+pub type AppRoute {
+  Top()
+  Users()
+  User(id: String)
+}
+
+pub type Route {
+  App(route: AppRoute)
+}
