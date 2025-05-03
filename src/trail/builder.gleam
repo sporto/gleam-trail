@@ -71,9 +71,9 @@ fn build_route_variant(
   ancestors: List(String),
   route: RouteTree,
 ) -> #(glance.Variant, Contributes) {
-  let ancestors_with_this = ancestors |> list.append([route.name])
+  let ancestors_and_this = ancestors |> list.append([route.name])
 
-  let variant_name = make_variant_name(ancestors_with_this)
+  let variant_name = make_variant_name(ancestors_and_this)
 
   let #(sub_route_contributes, sub_route_fields) = case route {
     types.RouteNode(_, _) -> {
@@ -83,7 +83,7 @@ fn build_route_variant(
       let sub_route_name = variant_name <> "Route"
 
       let sub_route_contributes =
-        build_route(ancestors_with_this, sub_route_name, route.children)
+        build_route(ancestors_and_this, sub_route_name, route.children)
 
       let sub_route_fields = [
         glance.LabelledVariantField(
@@ -119,18 +119,7 @@ fn build_route_variant(
 
   let this_variant_function_to_path = case route {
     types.RouteNode(_, _) -> {
-      let name = make_path_name(ancestors_with_this) <> "_path"
-      [
-        glance.Function(
-          name:,
-          publicity: glance.Public,
-          parameters: [],
-          return: Some(glance.VariableType("Route")),
-          body: [],
-          location: glance.Span(0, 0),
-        )
-        |> glance.Definition(attributes: [], definition: _),
-      ]
+      [make_path_fn(ancestors_and_this)]
     }
     _ -> []
   }
@@ -153,4 +142,36 @@ fn make_variant_name(path) {
   path
   |> string.join("_")
   |> justin.pascal_case
+}
+
+fn make_path_fn(full_path) {
+  let name = make_path_name(full_path) <> "_path"
+
+  let body = [
+    full_path
+    // |> list.reverse
+    |> list.fold(glance.Variable(""), fn(acc, segment) {
+      case acc {
+        glance.Variable("") -> glance.Variable(segment)
+        _ -> {
+          glance.BinaryOperator(
+            glance.Pipe,
+            left: glance.Variable(segment),
+            right: acc,
+          )
+        }
+      }
+    })
+    |> glance.Expression,
+  ]
+
+  glance.Function(
+    name:,
+    publicity: glance.Public,
+    parameters: [],
+    return: Some(glance.VariableType("Route")),
+    body:,
+    location: glance.Span(0, 0),
+  )
+  |> glance.Definition(attributes: [], definition: _)
 }

@@ -17,10 +17,18 @@ pub type Route {
   App(route: AppRoute)
 }
 
-pub fn app_user_delete_path() -> Route
+pub fn app_user_delete_path() -> Route {
+  Delete |> User |> App
+}
 
-pub fn app_user_top_path() -> Route
+pub fn app_user_top_path() -> Route {
+  Top |> User |> App
+}
 
-pub fn app_users_path() -> Route
+pub fn app_users_path() -> Route {
+  Users |> App
+}
 
-pub fn app_top_path() -> Route
+pub fn app_top_path() -> Route {
+  Top |> App
+}
